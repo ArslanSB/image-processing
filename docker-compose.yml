@@ -1,0 +1,45 @@
+version: "2.0"
+services:
+  db:
+    image: mariadb
+    restart: always
+    container_name: "im_db"
+    environment:
+      MYSQL_ROOT_PASSWORD: BDYgS4H4ZMHUKzRnw7GBbnH6p
+      MYSQL_DATABASE: redmine
+      MYSQL_USER: redmine
+      MYSQL_PASSWORD: redmine
+    volumes:
+      - "./dbdata/.:/var/lib/mysql/."
+  issues: # image that helps traking issues.
+    image: redmine
+    restart: always
+    container_name: "im_redmine"
+    environment:
+      REDMINE_DB_MYSQL: im_db
+      REDMINE_DB_USERNAME: redmine
+      REDMINE_DB_PASSWORD: redmine
+  reverse: #image that helps configure reverse proxy
+    image: haproxy
+    restart: always
+    container_name: "im_haproxy"
+    volumes:
+      - "./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg"
+    ports:
+      - "80:80"
+  phpmyadmin: #myadmin
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    container_name: "im_myadmin"
+    environment:
+      PMA_HOST: im_db
+  mail: #mail service
+    image: roundcube/roundcubemail:elastic
+    restart: always
+    container_name: "im_mail"
+    environment:
+      ROUNDCUBEMAIL_DB_TYPE: mysql
+      ROUNDCUBEMAIL_DB_HOST: im_db
+      ROUNDCUBEMAIL_DB_USER: roundcube
+      ROUNDCUBEMAIL_DB_PASSWORD: roundcube
+      ROUNDCUBEMAIL_DB_NAME: roundcube
