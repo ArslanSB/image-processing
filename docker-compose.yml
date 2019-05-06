@@ -2,6 +2,7 @@ version: "2.0"
 services:
   db:
     image: mariadb
+    hostname: database
     restart: always
     container_name: "im_db"
     environment:
@@ -10,31 +11,46 @@ services:
       MYSQL_USER: redmine
       MYSQL_PASSWORD: redmine
     volumes:
+      - "./config/.:/etc/mysql/conf.d"
+      - "./dbscripts/.:/docker-entrypoint-initdb.d/."
       - "./dbdata/.:/var/lib/mysql/."
   issues: # image that helps traking issues.
     image: redmine
+    hostname: redmine
     restart: always
     container_name: "im_redmine"
     environment:
       REDMINE_DB_MYSQL: im_db
       REDMINE_DB_USERNAME: redmine
       REDMINE_DB_PASSWORD: redmine
+    depends_on:
+      - db
+    volumes:
+      - "./redmine-plugins:/usr/src/redmine/plugins/."
   reverse: #image that helps configure reverse proxy
     image: haproxy
+    hostname: haproxy
     restart: always
     container_name: "im_haproxy"
     volumes:
       - "./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg"
     ports:
       - "80:80"
+      - "443:443"
+    depends_on:
+      - dns
   phpmyadmin: #myadmin
     image: phpmyadmin/phpmyadmin
+    hostname: myadmin
     restart: always
     container_name: "im_myadmin"
     environment:
       PMA_HOST: im_db
+    depends_on:
+      - db
   mail: #mail service
     image: roundcube/roundcubemail:elastic
+    hostname: roundcube
     restart: always
     container_name: "im_mail"
     environment:
@@ -43,3 +59,18 @@ services:
       ROUNDCUBEMAIL_DB_USER: roundcube
       ROUNDCUBEMAIL_DB_PASSWORD: roundcube
       ROUNDCUBEMAIL_DB_NAME: roundcube
+    depends_on:
+      - db
+  dns: #bind dns server
+      image: sameersbn/bind:9.11.3-20190315
+      hostname: bind
+      restart: always
+      container_name: "im_bind"
+      environment:
+        ROOT_PASSWORD: BDYgS4H4ZMHUKzRnw7GBbnH6p
+      ports:
+        - "53:53/udp"
+        - "53:53/tcp"
+        - "10000"
+      volumes:
+        - "./binddata/.:/data/."

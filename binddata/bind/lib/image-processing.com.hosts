@@ -1,0 +1,10 @@
+$ttl 38400
+image-processing.com.	IN	SOA	adde364a394c. admin.image-processing.com. (
+			1557029196
+			60
+			3600
+			604800
+			38400 )
+image-processing.com.	IN	NS	bind.
+*.image-processing.com.	IN	A	192.168.1.87
+image-processing.com.	IN	A	192.168.1.87
