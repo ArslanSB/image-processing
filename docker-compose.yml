@@ -23,22 +23,10 @@ services:
       REDMINE_DB_MYSQL: im_db
       REDMINE_DB_USERNAME: redmine
       REDMINE_DB_PASSWORD: redmine
-    depends_on:
-      - db
+#    depends_on:
+#      - db
     volumes:
       - "./redmine-plugins:/usr/src/redmine/plugins/."
-  reverse: #image that helps configure reverse proxy
-    image: haproxy
-    hostname: haproxy
-    restart: always
-    container_name: "im_haproxy"
-    volumes:
-      - "./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg"
-    ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      - dns
   phpmyadmin: #myadmin
     image: phpmyadmin/phpmyadmin
     hostname: myadmin
@@ -69,8 +57,46 @@ services:
       environment:
         ROOT_PASSWORD: BDYgS4H4ZMHUKzRnw7GBbnH6p
       ports:
-        - "53:53/udp"
-        - "53:53/tcp"
-        - "10000"
+#        - "53:53/tcp"
+#        - "53:53/udp"
+        - "10000:10000"
       volumes:
         - "./binddata/.:/data/."
+  tensorflow: # tensorflow image
+    image: tensorflow/tensorflow:nightly-py3-jupyter
+    hostname: tensorflow
+    restart: always
+    container_name: "im_tensorflow"
+    depends_on:
+      - reverse
+    ports:
+      - "8888:8888"
+    volumes:
+      - "./tensorflow/.:/tf/."
+      - "./tensorflow/jupyter_notebook_config.py:/root/.jupyter/jupyter_notebook_config.py"
+    command:
+      - /tf/startup.sh
+    devices:
+      - "/dev/video0:/dev/video0"
+  handwritting:
+    image: richarvey/nginx-php-fpm
+    hostname: handwritting
+    restart: always
+    container_name: "im_handwritting"
+    depends_on:
+      - reverse
+    volumes:
+      - "./tensorflow/canvas/.:/var/www/html/."
+      - "./tensorflow/uploads/.:/var/www/html/uploads/."
+  reverse: #image that helps configure reverse proxy
+    image: haproxy
+    hostname: haproxy
+    restart: always
+    container_name: "im_haproxy"
+    volumes:
+      - "./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg"
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - dns

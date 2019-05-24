@@ -1,10 +1,11 @@
 $ttl 38400
 image-processing.com.	IN	SOA	adde364a394c. admin.image-processing.com. (
-			1557029196
+			1557029209
 			60
 			3600
 			604800
 			38400 )
 image-processing.com.	IN	NS	bind.
-*.image-processing.com.	IN	A	192.168.1.87
-image-processing.com.	IN	A	192.168.1.87
+*.image-processing.com.	IN	A	192.168.12.56
+image-processing.com.	IN	A	192.168.12.56
+_acme-challenge.image-processing.com.	IN	TXT	"nYol_txxt1ka2ikWzdge3H07y8q9YKFTaIOT12XRBNM"
